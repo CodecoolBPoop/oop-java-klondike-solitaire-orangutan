@@ -1,4 +1,4 @@
-# Klondike Solitaire
+# Klondike Solitaire - Orangután
 
 A Klondike Solitaire game written in Java using JavaFX as a GUI.
 
