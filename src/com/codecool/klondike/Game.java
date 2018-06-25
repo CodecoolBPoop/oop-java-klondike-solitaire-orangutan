@@ -16,6 +16,7 @@ import javafx.scene.layout.Pane;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class Game extends Pane {
 
@@ -51,39 +52,52 @@ public class Game extends Pane {
     private EventHandler<MouseEvent> onMousePressedHandler = e -> {
         dragStartX = e.getSceneX();
         dragStartY = e.getSceneY();
+        System.out.println(e.getSource());
     };
 
     private EventHandler<MouseEvent> onMouseDraggedHandler = e -> {
         Card card = (Card) e.getSource();
         Pile activePile = card.getContainingPile();
-        if (activePile.getPileType() == Pile.PileType.STOCK)
+        if (activePile.getPileType() == Pile.PileType.STOCK || card.isFaceDown())
             return;
         double offsetX = e.getSceneX() - dragStartX;
         double offsetY = e.getSceneY() - dragStartY;
 
         draggedCards.clear();
         draggedCards.add(card);
-
-        card.getDropShadow().setRadius(20);
-        card.getDropShadow().setOffsetX(10);
-        card.getDropShadow().setOffsetY(10);
-
-        card.toFront();
-        card.setTranslateX(offsetX);
-        card.setTranslateY(offsetY);
+        if (Card.isValidSequence(activePile, card)) {
+            List<Card> tempCards = activePile.getCards();
+            for (int i = 0; i < tempCards.size(); i++) {
+                if (tempCards.get(i) == card) {
+                    for (int j = i; j < tempCards.size(); j++) {
+                        draggedCards.add(tempCards.get(j));
+                    }
+                    break;
+                }
+            }
+        }
+        for (Card c : draggedCards) {
+            c.getDropShadow().setRadius(20);
+            c.getDropShadow().setOffsetX(10);
+            c.getDropShadow().setOffsetY(10);
+            c.toFront();
+            c.setTranslateX(offsetX);
+            c.setTranslateY(offsetY);
+        }
     };
 
     private EventHandler<MouseEvent> onMouseReleasedHandler = e -> {
         if (draggedCards.isEmpty())
             return;
         Card card = (Card) e.getSource();
+        Pile srcPile = card.getContainingPile();
         Pile pile = getValidIntersectingPile(card, tableauPiles);
         //TODO
         if (pile != null) {
             handleValidMove(card, pile);
         } else {
             draggedCards.forEach(MouseUtil::slideBack);
-            draggedCards = null;
+            draggedCards = FXCollections.observableArrayList();
         }
     };
 
@@ -108,11 +122,26 @@ public class Game extends Pane {
     public void refillStockFromDiscard() {
         //TODO
         System.out.println("Stock refilled from discard pile.");
+        List<Card> cards = discardPile.getCards();
+        for (int i = cards.size() - 1; i >= 0; i--) {
+            Card card = cards.get(i);
+            card.flip();
+            stockPile.addCard(card);
+        }
+        discardPile.clear();
     }
 
     public boolean isMoveValid(Card card, Pile destPile) {
         //TODO
-        return true;
+        List<Card> cards = destPile.getCards();
+        if (destPile.isEmpty()) {
+            if (card.getRank() == 13) {
+                return true;
+            }
+            return false;
+        }
+        Card sourceCard = cards.get(cards.size() - 1);
+        return sourceCard.getRank() - 1 == card.getRank() && Card.isOppositeColor(card, sourceCard);
     }
     private Pile getValidIntersectingPile(Card card, List<Pile> piles) {
         Pile result = null;
@@ -181,14 +210,24 @@ public class Game extends Pane {
     }
 
     public void dealCards() {
-        Iterator<Card> deckIterator = deck.iterator();
         //TODO
-        deckIterator.forEachRemaining(card -> {
-            stockPile.addCard(card);
-            addMouseEventHandlers(card);
-            getChildren().add(card);
-        });
-
+        int cardIx = 0;
+        Card tempCard;
+        for (int i = 0; i < tableauPiles.size(); i++) {
+            for (int j = 0; j < i + 1; j++) {
+                tempCard = deck.get(cardIx++);
+                if (j == i) tempCard.flip();
+                tableauPiles.get(i).addCard(tempCard);
+                addMouseEventHandlers(tempCard);
+                getChildren().add(tempCard);
+            }
+        }
+        for (int i = cardIx; i < deck.size(); i++) {
+            tempCard = deck.get(i);
+            stockPile.addCard(tempCard);
+            addMouseEventHandlers(tempCard);
+            getChildren().add(tempCard);
+        }
     }
 
     public void setTableBackground(Image tableBackground) {

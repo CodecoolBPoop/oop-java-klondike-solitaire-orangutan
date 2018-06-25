@@ -5,7 +5,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class Card extends ImageView {
 
@@ -32,6 +34,20 @@ public class Card extends ImageView {
         frontFace = cardFaceImages.get(getShortName());
         setImage(faceDown ? backFace : frontFace);
         setEffect(dropShadow);
+    }
+
+    public static boolean isValidSequence(Pile activePile, Card draggedCard) {
+        List<Card> cards = activePile.getCards();
+        for (int i = 0; i < cards.size(); i++) {
+            if (cards.get(i) == draggedCard && !cards.get(i).isFaceDown()) {
+                for (int j = i + 1; j < cards.size(); j++) {
+                    if (cards.get(j).getRank() + 1 != cards.get(j - 1).getRank()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     public int getSuit() {
@@ -79,7 +95,7 @@ public class Card extends ImageView {
 
     public static boolean isOppositeColor(Card card1, Card card2) {
         //TODO
-        return true;
+        return (card1.getSuit() <= 2 && card2.getSuit() > 2) || (card1.getSuit() > 2 && card2.getSuit() <= 2);
     }
 
     public static boolean isSameSuit(Card card1, Card card2) {
@@ -93,6 +109,7 @@ public class Card extends ImageView {
                 result.add(new Card(suit, rank, true));
             }
         }
+        Collections.shuffle(result);
         return result;
     }
 
