@@ -88,7 +88,13 @@ public class Game extends Pane {
     };
 
     public boolean isGameWon() {
-        //TODO
+        if (foundationPiles.get(0).getTopCard().getRank() == 13
+                && foundationPiles.get(1).getTopCard().getRank() == 13
+                && foundationPiles.get(2).getTopCard().getRank() == 13
+                && foundationPiles.get(3).getTopCard().getRank() == 13){
+
+            return true;
+        }
         return false;
     }
 
@@ -182,7 +188,17 @@ public class Game extends Pane {
 
     public void dealCards() {
         Iterator<Card> deckIterator = deck.iterator();
+
         //TODO
+        for( int i = 0; i < 7; i++) {
+            for( int j = 0; j<i+1; j++) {
+                Card card = deckIterator.next();
+                tableauPiles.get(i).addCard(card);
+                addMouseEventHandlers(card);
+                getChildren().add(card);
+            }
+        }
+
         deckIterator.forEachRemaining(card -> {
             stockPile.addCard(card);
             addMouseEventHandlers(card);
