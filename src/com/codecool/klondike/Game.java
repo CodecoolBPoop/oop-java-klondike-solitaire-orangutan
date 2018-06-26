@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
@@ -12,6 +13,9 @@ import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.Pane;
+
+import javafx.scene.control.Button;
+import javafx.scene.control.Alert.AlertType;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -92,7 +96,9 @@ public class Game extends Pane {
                 && foundationPiles.get(1).getTopCard().getRank() == 13
                 && foundationPiles.get(2).getTopCard().getRank() == 13
                 && foundationPiles.get(3).getTopCard().getRank() == 13){
-
+                    Alert alert = new Alert(AlertType.INFORMATION, "Congratulation!", ButtonType.OK);
+                    alert.getDialogPane().setMinHeight(100);
+                    alert.show();
             return true;
         }
         return false;
