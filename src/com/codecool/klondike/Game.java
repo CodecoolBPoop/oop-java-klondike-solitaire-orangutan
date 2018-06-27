@@ -75,7 +75,6 @@ public class Game extends Pane {
             }
             if (pastCard){
                 draggedCards.add(actual);
-                System.out.println(draggedCards);
             }
 
         }
@@ -102,14 +101,13 @@ public class Game extends Pane {
             if (pile != null) {
                 ObservableList<Card> previousPile = card.getContainingPile().getCards();
                 if (previousPile.size()>1) {                //flip prev. card
-                    Card cardToFlip = previousPile.get(previousPile.size() - 2);
+                    Card cardToFlip = previousPile.get(previousPile.size() - draggedCards.size() - 1);
                     if (cardToFlip.isFaceDown()) {
                         cardToFlip.flip();
                         addMouseEventHandlers(cardToFlip);
                     }
                 }
                 handleValidMove(card, pile);
-                isGameWon();
             } else {
                 draggedCards.forEach(MouseUtil::slideBack);
                 draggedCards.clear();
@@ -118,14 +116,19 @@ public class Game extends Pane {
     };
 
     public boolean isGameWon() {
-        if (foundationPiles.get(0).getTopCard().getRank() == 13
-                && foundationPiles.get(1).getTopCard().getRank() == 13
-                && foundationPiles.get(2).getTopCard().getRank() == 13
-                && foundationPiles.get(3).getTopCard().getRank() == 13){
-                    Alert alert = new Alert(AlertType.INFORMATION, "Congratulation!", ButtonType.OK);
-                    alert.getDialogPane().setMinHeight(100);
-                    alert.show();
-            return true;
+        if (!foundationPiles.get(0).isEmpty()
+                && !foundationPiles.get(1).isEmpty()
+                && !foundationPiles.get(2).isEmpty()
+                && !foundationPiles.get(3).isEmpty()) {
+            if (foundationPiles.get(0).getTopCard().getRank() == 13
+                    && foundationPiles.get(1).getTopCard().getRank() == 13
+                    && foundationPiles.get(2).getTopCard().getRank() == 13
+                    && foundationPiles.get(3).getTopCard().getRank() == 13) {
+                Alert alert = new Alert(AlertType.INFORMATION, "Congratulation!", ButtonType.OK);
+                alert.getDialogPane().setMinHeight(100);
+                alert.show();
+                return true;
+            }
         }
         return false;
     }
@@ -156,7 +159,7 @@ public class Game extends Pane {
             if (destPile.getPileType() == Pile.PileType.TABLEAU) {
                 return card.getRank() == Ranks.THIRTEENTH.rankNumber;
             } else {
-                return card.getRank() == Ranks.FIRST.rankNumber;
+                return card.getRank() == Ranks.FIRST.rankNumber && draggedCards.size() == 1;
             }
         }
         if (destPile.getPileType() == Pile.PileType.TABLEAU){
@@ -164,7 +167,8 @@ public class Game extends Pane {
                         && card.getRank()+1 == destPile.getTopCard().getRank());
         } else {
             return (card.isSameSuit(destPile.getTopCard(),card)
-                            && card.getRank() == destPile.getTopCard().getRank()+1);
+                            && card.getRank() == destPile.getTopCard().getRank()+1
+                            && draggedCards.size() == 1);
         }
     }
     private Pile getValidIntersectingPile(Card card, List<Pile> piles) {
@@ -198,6 +202,7 @@ public class Game extends Pane {
         System.out.println(msg);
         MouseUtil.slideToDest(draggedCards, destPile);
         draggedCards.clear();
+        isGameWon();
     }
 
 
