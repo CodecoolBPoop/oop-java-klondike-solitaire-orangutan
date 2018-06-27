@@ -48,9 +48,8 @@ public class Pile extends Pane {
         return this.cards.isEmpty();
     }
 
-    public void clear() {
-        this.cards.removeAll();
-    }
+
+
 
     public void addCard(Card card) {
         cards.add(card);
@@ -59,7 +58,7 @@ public class Pile extends Pane {
         layoutCard(card);
     }
 
-    private void layoutCard(Card card) {
+    void layoutCard(Card card) {
         card.relocate(card.getLayoutX() + card.getTranslateX(), card.getLayoutY() + card.getTranslateY());
         card.setTranslateX(0);
         card.setTranslateY(0);

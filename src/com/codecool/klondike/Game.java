@@ -1,9 +1,8 @@
 package com.codecool.klondike;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -135,6 +134,7 @@ public class Game extends Pane {
 
     public Game() {
         deck = Card.createNewDeck();
+        initButtons();
         initPiles();
         dealCards();
     }
@@ -205,9 +205,22 @@ public class Game extends Pane {
         isGameWon();
     }
 
+    private void initButtons() {
+        Button restartButton = new Button("Restart");
+        restartButton.setLayoutX(30);
+        restartButton.setLayoutY(850);
+        getChildren().add(restartButton);
+        restartButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent e) {
+                restart();
+            }
+        });
+
+        //put more buttons below
+
+    }
 
     private void initPiles() {
-
         stockPile = new Pile(Pile.PileType.STOCK, "Stock", STOCK_GAP);
         stockPile.setBlurredBackground();
         stockPile.setLayoutX(95);
@@ -262,10 +275,46 @@ public class Game extends Pane {
 
     }
 
-    public void setTableBackground(Image tableBackground) {
+    void setTableBackground(Image tableBackground) {
         setBackground(new Background(new BackgroundImage(tableBackground,
                 BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
                 BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));
+    }
+
+    private void restart () {
+        for (Pile p: tableauPiles) {
+            for (Card c: p.getCards()) {
+                getChildren().remove(c);
+            }
+            p.getCards().clear();
+        }
+
+        for (Pile p: foundationPiles) {
+            for (Card c: p.getCards()) {
+                getChildren().remove(c);
+            }
+            p.getCards().clear();
+        }
+
+        for (Card c: stockPile.getCards()) {
+            getChildren().remove(c);
+        }
+        stockPile.getCards().clear();
+
+        for (Card c: discardPile.getCards()) {
+            getChildren().remove(c);
+        }
+
+        deck.clear();
+        discardPile.getCards().clear();
+        deck = Card.createNewDeck();
+        dealCards();
+
+
+
+
+
+
     }
 
 }
