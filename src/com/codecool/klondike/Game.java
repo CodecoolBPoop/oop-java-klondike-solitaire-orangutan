@@ -2,6 +2,7 @@ package com.codecool.klondike;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
@@ -216,8 +217,15 @@ public class Game extends Pane {
             }
         });
 
-        //put more buttons below
-
+        Button undoButton = new Button("Undo");
+        undoButton.setLayoutX(110);
+        undoButton.setLayoutY(850);
+        getChildren().add(undoButton);
+        undoButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent e) {
+                undo();
+            }
+        });
     }
 
     private void initPiles() {
@@ -309,11 +317,9 @@ public class Game extends Pane {
         discardPile.getCards().clear();
         deck = Card.createNewDeck();
         dealCards();
+    }
 
-
-
-
-
+    public void undo () {
 
     }
 
