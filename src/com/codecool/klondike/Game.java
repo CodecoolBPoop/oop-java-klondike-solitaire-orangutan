@@ -240,7 +240,7 @@ public class Game extends Pane {
     }
 
     public void dealCards() {
-        // Collections.shuffle(deck);
+        Collections.shuffle(deck);
         Iterator<Card> deckIterator = deck.iterator();
 
         //TODO
