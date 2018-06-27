@@ -2,6 +2,7 @@ package com.codecool.klondike;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -16,6 +17,7 @@ import javafx.scene.layout.Pane;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.Alert.AlertType;
+import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -36,6 +38,8 @@ public class Game extends Pane {
     private static double STOCK_GAP = 1;
     private static double FOUNDATION_GAP = 0;
     private static double TABLEAU_GAP = 30;
+
+
 
 
     private EventHandler<MouseEvent> onMouseClickedHandler = e -> {
@@ -106,6 +110,7 @@ public class Game extends Pane {
 
     public Game() {
         deck = Card.createNewDeck();
+        initButtons();
         initPiles();
         dealCards();
     }
@@ -159,6 +164,20 @@ public class Game extends Pane {
         draggedCards.clear();
     }
 
+    private void initButtons() {
+        Button restartButton = new Button("Restart");
+        restartButton.setLayoutX(30);
+        restartButton.setLayoutY(850);
+        getChildren().add(restartButton);
+        restartButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent e) {
+                restart();
+            }
+        });
+
+        //put more buttons below
+
+    }
 
     private void initPiles() {
         stockPile = new Pile(Pile.PileType.STOCK, "Stock", STOCK_GAP);
@@ -213,10 +232,46 @@ public class Game extends Pane {
 
     }
 
-    public void setTableBackground(Image tableBackground) {
+    void setTableBackground(Image tableBackground) {
         setBackground(new Background(new BackgroundImage(tableBackground,
                 BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
                 BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));
+    }
+
+    private void restart () {
+        for (Pile p: tableauPiles) {
+            for (Card c: p.getCards()) {
+                getChildren().remove(c);
+            }
+            p.getCards().clear();
+        }
+
+        for (Pile p: foundationPiles) {
+            for (Card c: p.getCards()) {
+                getChildren().remove(c);
+            }
+            p.getCards().clear();
+        }
+
+        for (Card c: stockPile.getCards()) {
+            getChildren().remove(c);
+        }
+        stockPile.getCards().clear();
+
+        for (Card c: discardPile.getCards()) {
+            getChildren().remove(c);
+        }
+
+        deck.clear();
+        discardPile.getCards().clear();
+        deck = Card.createNewDeck();
+        dealCards();
+
+
+
+
+
+
     }
 
 }

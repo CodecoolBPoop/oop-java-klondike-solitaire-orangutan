@@ -25,4 +25,8 @@ public class Klondike extends Application {
         primaryStage.show();
     }
 
+    public void restart(Stage stage) {
+        start(stage);
+    }
+
 }
