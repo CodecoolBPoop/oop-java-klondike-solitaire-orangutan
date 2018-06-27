@@ -2,6 +2,7 @@ package com.codecool.klondike;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -18,6 +19,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Alert.AlertType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -83,6 +85,13 @@ public class Game extends Pane {
         Card card = (Card) e.getSource();
         Pile pile = getValidIntersectingPile(card, tableauPiles);
         //TODO
+
+        ObservableList<Card> previousPile = card.getContainingPile().getCards();
+        Card cardToFlip = previousPile.get(previousPile.size()-2);
+        if (cardToFlip.isFaceDown()){
+            cardToFlip.flip();
+        }
+
         if (pile != null) {
             handleValidMove(card, pile);
         } else {
@@ -161,6 +170,7 @@ public class Game extends Pane {
 
 
     private void initPiles() {
+
         stockPile = new Pile(Pile.PileType.STOCK, "Stock", STOCK_GAP);
         stockPile.setBlurredBackground();
         stockPile.setLayoutX(95);
@@ -193,6 +203,7 @@ public class Game extends Pane {
     }
 
     public void dealCards() {
+        Collections.shuffle(deck);
         Iterator<Card> deckIterator = deck.iterator();
 
         //TODO
@@ -203,6 +214,7 @@ public class Game extends Pane {
                 addMouseEventHandlers(card);
                 getChildren().add(card);
             }
+            tableauPiles.get(i).getTopCard().flip();
         }
 
         deckIterator.forEachRemaining(card -> {
