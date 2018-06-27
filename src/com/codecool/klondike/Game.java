@@ -46,7 +46,7 @@ public class Game extends Pane {
             card.moveToPile(discardPile);
             card.flip();
             card.setMouseTransparent(false);
-            System.out.println("Placed " + card + " to the waste.");
+            System.out.println("Placed " + card.getRank() + " of " + card.getSuit() + " to the waste.");
         }
     };
 
