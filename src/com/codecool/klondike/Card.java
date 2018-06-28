@@ -95,6 +95,15 @@ public class Card extends ImageView {
         return card1.getSuit().equals(card2.getSuit());
     }
 
+    public void initForDrag(double offsetX, double offsetY) {
+        this.getDropShadow().setRadius(20);
+        this.getDropShadow().setOffsetX(10);
+        this.getDropShadow().setOffsetY(10);
+        this.toFront();
+        this.setTranslateX(offsetX);
+        this.setTranslateY(offsetY);
+    }
+
     public static List<Card> createNewDeck() {
         List<Card> result = new ArrayList<>();
         for (Suits s: Suits.values()) {

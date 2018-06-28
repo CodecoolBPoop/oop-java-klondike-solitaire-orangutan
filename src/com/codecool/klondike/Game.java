@@ -53,10 +53,11 @@ public class Game extends Pane {
             card.setMouseTransparent(false);
             System.out.println("Placed " + card.getRank() + " of " + card.getSuit() + " to the waste.");
         }
-        if(e.getClickCount() == 2 && card.isTopCard()) {
+        if(e.getClickCount() == 2 && card.isTopCard() && !card.isFaceDown()) {
             draggedCards.add(card);
             for (int i=0;i<4;i++) {
                 if (isMoveValid(card,foundationPiles.get(i))){
+                    card.initForDrag(0, 0);
                     CheckAndFlipCardIfNeededTopCard(card.getContainingPile().getCards());
                     handleValidMove(card,foundationPiles.get(i));
                 }
@@ -88,26 +89,21 @@ public class Game extends Pane {
         while(i.hasNext()){
             Card actual = (Card)i.next();
             if (actual.equals(card) && !pastCard){
-                    pastCard = true;
+                pastCard = true;
             }
             if (pastCard){
                 draggedCards.add(actual);
             }
 
         }
-        for (Card drag: draggedCards) {
-            drag.getDropShadow().setRadius(20);
-            drag.getDropShadow().setOffsetX(10);
-            drag.getDropShadow().setOffsetY(10);
-
-            drag.toFront();
-            drag.setTranslateX(offsetX);
-            drag.setTranslateY(offsetY);
+        for (Card c: draggedCards) {
+            c.initForDrag(offsetX, offsetY);
         }
     };
 
+
     private void CheckAndFlipCardIfNeededTopCard(ObservableList<Card> pileToCheck){
-        if (pileToCheck.size()>1) {
+        if (pileToCheck.size()>draggedCards.size()) {
             Card cardToFlip = pileToCheck.get(pileToCheck.size() - draggedCards.size() - 1);
             if (cardToFlip.isFaceDown()) {
                 cardToFlip.flip();
@@ -291,7 +287,7 @@ public class Game extends Pane {
     }
 
     public void dealCards() {
-        // Collections.shuffle(deck);
+        Collections.shuffle(deck);
         Iterator<Card> deckIterator = deck.iterator();
 
         //TODO
