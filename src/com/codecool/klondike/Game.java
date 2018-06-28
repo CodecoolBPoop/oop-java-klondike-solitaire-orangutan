@@ -116,9 +116,10 @@ public class Game extends Pane {
             }
             if (win) {
                 int min;
-                Card minCard = null;
+                Card minCard;
                 do {
                     min = 14;
+                    minCard = null;
                     for (int i = 0; i < 7; i++) {
                         Pile pileToCheck = tableauPiles.get(i);
                         if (!pileToCheck.isEmpty()) {
@@ -137,9 +138,10 @@ public class Game extends Pane {
                         }
                         draggedCards.clear();
                         draggedCards.add(minCard);
+                        minCard.getContainingPile().getCards().remove(minCard.getContainingPile().getCards().size()-1);
                         handleValidMove(minCard,destPile);
                     }
-                } while (min != 14);
+                }while (min != 14);
             }
         }
     };
