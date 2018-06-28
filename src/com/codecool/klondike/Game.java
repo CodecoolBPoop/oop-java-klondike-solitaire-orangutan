@@ -45,8 +45,49 @@ public class Game extends Pane {
 
     private EventHandler<MouseEvent> onMouseClickedHandler = e -> {
         Card card = (Card) e.getSource();
+        if (e.getButton() == MouseButton.SECONDARY) {
+            Boolean win = stockPile.isEmpty();
+            if (win) {
+                win = discardPile.isEmpty();
+            }
+            if (win) {
+                for (int i = 0; i < 7; i++) {
+                    for (Card tempCard : tableauPiles.get(i).getCards()) {
+                        win = !tempCard.isFaceDown();
+                    }
+                }
+            }
+            if (win) {
+                int min;
+                Card minCard;
+                do {
+                    min = 14;
+                    minCard = null;
+                    for (int i = 0; i < 7; i++) {
+                        Pile pileToCheck = tableauPiles.get(i);
+                        if (!pileToCheck.isEmpty()) {
+                            if (pileToCheck.getTopCard().getRank() < min) {
+                                min = pileToCheck.getTopCard().getRank();
+                                minCard = pileToCheck.getTopCard();
+                            }
+                        }
+                    }
+                    if (minCard != null) {
+                        Pile destPile = foundationPiles.get(0);
+                        for (int i = 1; i < 4; i++) {
+                            if (foundationPiles.get(i).getTopCard().getSuit().equals(minCard.getSuit())) {
+                                destPile = foundationPiles.get(i);
+                            }
+                        }
+                        draggedCards.clear();
+                        draggedCards.add(minCard);
+                        minCard.getContainingPile().getCards().remove(minCard.getContainingPile().getCards().size()-1);
+                        handleValidMove(minCard,destPile);
+                    }
+                } while (min != 14);
+            }
+        }
         if (card.getContainingPile().getPileType() == Pile.PileType.STOCK && card.isTopCard()) {
-
             moveHistory.addMove(new Move(card, stockPile, 0));
             card.moveToPile(discardPile);
             card.flip();
@@ -98,53 +139,6 @@ public class Game extends Pane {
         }
         for (Card c: draggedCards) {
             c.initForDrag(offsetX, offsetY);
-        }
-    };
-
-
-    private EventHandler<MouseEvent> onMouseClickForAutoWin = e -> {
-        if (e.getButton() == MouseButton.SECONDARY) {
-            Boolean win = true;
-            win = stockPile.isEmpty();
-            if (win) {
-                win = discardPile.isEmpty();
-            }
-            if (win) {
-                for (int i = 0; i < 7; i++) {
-                    for (Card card : tableauPiles.get(i).getCards()) {
-                        win = !card.isFaceDown();
-                    }
-                }
-            }
-            if (win) {
-                int min;
-                Card minCard;
-                do {
-                    min = 14;
-                    minCard = null;
-                    for (int i = 0; i < 7; i++) {
-                        Pile pileToCheck = tableauPiles.get(i);
-                        if (!pileToCheck.isEmpty()) {
-                            if (pileToCheck.getTopCard().getRank() < min) {
-                                min = pileToCheck.getTopCard().getRank();
-                                minCard = pileToCheck.getTopCard();
-                            }
-                        }
-                    }
-                    if (minCard != null) {
-                        Pile destPile = foundationPiles.get(0);
-                        for (int i = 1; i < 4; i++) {
-                            if (foundationPiles.get(i).getTopCard().getSuit().equals(minCard.getSuit())) {
-                                destPile = foundationPiles.get(i);
-                            }
-                        }
-                        draggedCards.clear();
-                        draggedCards.add(minCard);
-                        minCard.getContainingPile().getCards().remove(minCard.getContainingPile().getCards().size()-1);
-                        handleValidMove(minCard,destPile);
-                    }
-                }while (min != 14);
-            }
         }
     };
 
@@ -209,7 +203,6 @@ public class Game extends Pane {
         card.setOnMouseDragged(onMouseDraggedHandler);
         card.setOnMouseReleased(onMouseReleasedHandler);
         card.setOnMouseClicked(onMouseClickedHandler);
-        card.setOnMouseClicked(onMouseClickForAutoWin);
     }
 
     public void refillStockFromDiscard() {
