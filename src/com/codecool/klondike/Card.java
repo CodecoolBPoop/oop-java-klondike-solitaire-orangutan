@@ -87,6 +87,10 @@ public class Card extends ImageView {
 
     }
 
+    public boolean isTopCard() {
+        return this.getContainingPile().getTopCard() == this;
+    }
+
     public static boolean isSameSuit(Card card1, Card card2) {
         return card1.getSuit().equals(card2.getSuit());
     }
