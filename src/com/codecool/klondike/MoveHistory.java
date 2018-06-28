@@ -28,7 +28,9 @@ class MoveHistory {
     void undoLastMove() {
         int n;
         Move lastMove = mh.peek();
-        lastMove.previousPile.getTopCard().flip();
+        if (lastMove.previousPile.getPileType() == Pile.PileType.TABLEAU && !lastMove.previousPile.isEmpty()) {
+            lastMove.previousPile.getTopCard().flip();
+        }
         do {
             n = lastMove.draggedWith;
             if (!lastMove.cardWasFaceDown
