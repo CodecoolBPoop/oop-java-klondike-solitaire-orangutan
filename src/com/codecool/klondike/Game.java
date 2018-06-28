@@ -2,6 +2,7 @@ package com.codecool.klondike;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
@@ -44,6 +45,16 @@ public class Game extends Pane {
             card.flip();
             card.setMouseTransparent(false);
             System.out.println("Placed " + card.getRank() + " of " + card.getSuit() + " to the waste.");
+        }
+        if(e.getClickCount() == 2) {
+            draggedCards.add(card);
+            for (int i=0;i<4;i++) {
+                if (isMoveValid(card,foundationPiles.get(i))){
+                    CheckAndFlipCardIfNeededTopCard(card.getContainingPile().getCards());
+                    handleValidMove(card,foundationPiles.get(i));
+                }
+            }
+            draggedCards.clear();
         }
     };
 
@@ -88,6 +99,16 @@ public class Game extends Pane {
         }
     };
 
+    private void CheckAndFlipCardIfNeededTopCard(ObservableList<Card> pileToCheck){
+        if (pileToCheck.size()>1) {
+            Card cardToFlip = pileToCheck.get(pileToCheck.size() - draggedCards.size() - 1);
+            if (cardToFlip.isFaceDown()) {
+                cardToFlip.flip();
+                addMouseEventHandlers(cardToFlip);
+            }
+        }
+    }
+
     private EventHandler<MouseEvent> onMouseReleasedHandler = e -> {
         if (draggedCards.isEmpty())
             return;
@@ -99,13 +120,7 @@ public class Game extends Pane {
             //TODO
             if (pile != null) {
                 ObservableList<Card> previousPile = card.getContainingPile().getCards();
-                if (previousPile.size()>1) {                //flip prev. card
-                    Card cardToFlip = previousPile.get(previousPile.size() - draggedCards.size() - 1);
-                    if (cardToFlip.isFaceDown()) {
-                        cardToFlip.flip();
-                        addMouseEventHandlers(cardToFlip);
-                    }
-                }
+                CheckAndFlipCardIfNeededTopCard(previousPile);
                 handleValidMove(card, pile);
             } else {
                 draggedCards.forEach(MouseUtil::slideBack);
@@ -159,7 +174,7 @@ public class Game extends Pane {
             if (destPile.getPileType() == Pile.PileType.TABLEAU) {
                 return card.getRank() == Ranks.THIRTEENTH.rankNumber;
             } else {
-                return card.getRank() == Ranks.FIRST.rankNumber && draggedCards.size() == 1;
+                return card.getRank() == Ranks.FIRST.rankNumber && draggedCards.size() <= 1;
             }
         }
         if (destPile.getPileType() == Pile.PileType.TABLEAU){
@@ -168,7 +183,7 @@ public class Game extends Pane {
         } else {
             return (card.isSameSuit(destPile.getTopCard(),card)
                             && card.getRank() == destPile.getTopCard().getRank()+1
-                            && draggedCards.size() == 1);
+                            && draggedCards.size() <= 1);
         }
     }
     private Pile getValidIntersectingPile(Card card, List<Pile> piles) {
