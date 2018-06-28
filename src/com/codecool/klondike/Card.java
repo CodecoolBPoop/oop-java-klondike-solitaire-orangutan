@@ -17,6 +17,8 @@ public class Card extends ImageView {
     private Image frontFace;
     private Pile containingPile;
     private DropShadow dropShadow;
+    private static int cardBackGroundCycle = 1;
+
 
     static Image cardBackImage;
     private static final Map<String, Image> cardFaceImages = new HashMap<>();
@@ -106,7 +108,7 @@ public class Card extends ImageView {
     }
 
     public static void loadCardImages() {
-        cardBackImage = new Image("card_images/card_back.png");
+        cardBackImage = new Image("card_images/card_back1.png");
         String suitName;
         for (Suits s: Suits.values() ) {
             suitName = s.name();
@@ -117,6 +119,17 @@ public class Card extends ImageView {
                 cardFaceImages.put(cardId, new Image(imageFileName));
             }
         }
+    }
+
+    void changeBackFace() {
+
+        if (cardBackGroundCycle < CardBackgrounds.values().length) {
+            cardBackImage = new Image(CardBackgrounds.values()[cardBackGroundCycle++].url);
+        } else {
+            cardBackGroundCycle = 0;
+            cardBackImage = new Image(CardBackgrounds.values()[cardBackGroundCycle++].url);
+        }
+
     }
 
 }
