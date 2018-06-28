@@ -101,8 +101,7 @@ public class Game extends Pane {
     };
 
     private EventHandler<MouseEvent> onMouseClickForAutoWin = e -> {
-        System.out.print(e.getButton());
-        if (false) {
+        if (e.getButton() == MouseButton.SECONDARY) {
             Boolean win = true;
             win = stockPile.isEmpty();
             if (win) {
@@ -129,22 +128,21 @@ public class Game extends Pane {
                             }
                         }
                     }
-                    Pile destPile = foundationPiles.get(0);
                     if (minCard != null) {
+                        Pile destPile = foundationPiles.get(0);
                         for (int i = 1; i < 4; i++) {
                             if (foundationPiles.get(i).getTopCard().getSuit().equals(minCard.getSuit())) {
                                 destPile = foundationPiles.get(i);
                             }
                         }
-                        handleValidMove(minCard, destPile);
+                        draggedCards.clear();
+                        draggedCards.add(minCard);
+                        handleValidMove(minCard,destPile);
                     }
                 } while (min != 14);
             }
         }
     };
-
-
-
 
     private void CheckAndFlipCardIfNeededTopCard(ObservableList<Card> pileToCheck){
         if (pileToCheck.size()>1) {
@@ -207,6 +205,7 @@ public class Game extends Pane {
         card.setOnMouseDragged(onMouseDraggedHandler);
         card.setOnMouseReleased(onMouseReleasedHandler);
         card.setOnMouseClicked(onMouseClickedHandler);
+        card.setOnMouseClicked(onMouseClickForAutoWin);
     }
 
     public void refillStockFromDiscard() {
@@ -316,6 +315,7 @@ public class Game extends Pane {
     }
 
     public void dealCards() {
+        /*
         // Collections.shuffle(deck);
         Iterator<Card> deckIterator = deck.iterator();
 
@@ -336,8 +336,8 @@ public class Game extends Pane {
             addMouseEventHandlers(card);
             getChildren().add(card);
         });
-
-        // cheatStart();
+        */
+        cheatStart();
     }
 
     private void cheatStart() {
