@@ -19,6 +19,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.control.Button;
 import javafx.scene.control.Alert.AlertType;
 
+import java.awt.event.MouseListener;
 import java.util.*;
 
 public class Game extends Pane {
@@ -46,7 +47,7 @@ public class Game extends Pane {
             card.setMouseTransparent(false);
             System.out.println("Placed " + card.getRank() + " of " + card.getSuit() + " to the waste.");
         }
-        if(e.getClickCount() == 2) {
+        if(e.getClickCount() >= 2) {
             draggedCards.add(card);
             for (int i=0;i<4;i++) {
                 if (isMoveValid(card,foundationPiles.get(i))){
@@ -100,7 +101,7 @@ public class Game extends Pane {
     };
 
     private void CheckAndFlipCardIfNeededTopCard(ObservableList<Card> pileToCheck){
-        if (pileToCheck.size()>1) {
+        if (pileToCheck.size()>draggedCards.size()) {
             Card cardToFlip = pileToCheck.get(pileToCheck.size() - draggedCards.size() - 1);
             if (cardToFlip.isFaceDown()) {
                 cardToFlip.flip();
@@ -159,6 +160,7 @@ public class Game extends Pane {
         card.setOnMouseDragged(onMouseDraggedHandler);
         card.setOnMouseReleased(onMouseReleasedHandler);
         card.setOnMouseClicked(onMouseClickedHandler);
+        }
     }
 
     public void refillStockFromDiscard() {
@@ -167,6 +169,47 @@ public class Game extends Pane {
             discardPile.getCards().get(i).moveToPile(stockPile);
         }
         System.out.println("Stock refilled from discard pile.");
+    }
+
+    private void autoWin(){
+        MouseEvent event;
+        Boolean win = true;
+        win = stockPile.isEmpty();
+        if (win){
+            win = discardPile.isEmpty();
+        }
+        if (win){
+            for (int i = 0; i < 7; i++){
+                for (Card card: tableauPiles.get(i).getCards()){
+                    win = !card.isFaceDown();
+                }
+            }
+        }
+        if (win) {
+            int min;
+            Card minCard = null;
+            do{
+                min = 14;
+                for (int i = 0; i < 7; i++) {
+                    Pile pileToCheck = tableauPiles.get(i);
+                    if (!pileToCheck.isEmpty()) {
+                        if (pileToCheck.getTopCard().getRank()<min){
+                            min = pileToCheck.getTopCard().getRank();
+                            minCard = pileToCheck.getTopCard();
+                        }
+                    }
+                }
+                Pile destPile = foundationPiles.get(0);
+                if (minCard != null) {
+                    for (int i = 1; i < 4; i++) {
+                        if (foundationPiles.get(i).getTopCard().getSuit().equals(minCard.getSuit())) {
+                            destPile = foundationPiles.get(i);
+                        }
+                    }
+                    handleValidMove(minCard,destPile );
+                }
+            }while (min != 14);
+        }
     }
 
     public boolean isMoveValid(Card card, Pile destPile) {
@@ -217,7 +260,6 @@ public class Game extends Pane {
         System.out.println(msg);
         MouseUtil.slideToDest(draggedCards, destPile);
         draggedCards.clear();
-        isGameWon();
     }
 
     private void initButtons() {
@@ -268,11 +310,11 @@ public class Game extends Pane {
     }
 
     public void dealCards() {
-        Collections.shuffle(deck);
+        //Collections.shuffle(deck);
         Iterator<Card> deckIterator = deck.iterator();
 
         //TODO
-        for( int i = 0; i < 7; i++) {
+        /* for( int i = 0; i < 7; i++) {
             for( int j = 0; j<i+1; j++) {
                 Card card = deckIterator.next();
                 tableauPiles.get(i).addCard(card);
@@ -281,7 +323,7 @@ public class Game extends Pane {
             addMouseEventHandlers(tableauPiles.get(i).getTopCard());
             tableauPiles.get(i).getTopCard().flip();
         }
-
+        */
         deckIterator.forEachRemaining(card -> {
             stockPile.addCard(card);
             addMouseEventHandlers(card);
