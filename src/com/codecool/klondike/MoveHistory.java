@@ -27,16 +27,21 @@ class MoveHistory {
 
     void undoLastMove() {
         int n;
-        Move lastMove;
+        Move lastMove = mh.peek();
+        if (lastMove.previousPile.getPileType() == Pile.PileType.TABLEAU && !lastMove.previousPile.isEmpty()) {
+            lastMove.previousPile.getTopCard().flip();
+        }
         do {
-            lastMove = mh.peek();
             n = lastMove.draggedWith;
             if (!lastMove.cardWasFaceDown
                     && lastMove.whichCard.isFaceDown()
                     || lastMove.cardWasFaceDown
-                    && !lastMove.whichCard.isFaceDown()) {lastMove.whichCard.flip();}
+                    && !lastMove.whichCard.isFaceDown()) {
+                lastMove.whichCard.flip();
+            }
             lastMove.whichCard.moveToPile(lastMove.previousPile);
             removeLastMove();
+            lastMove = mh.peek();
             n--;
         } while (n > 0);
     }
