@@ -26,21 +26,23 @@ class MoveHistory {
     }
 
     void undoLastMove() {
-        Move lastMove = mh.peek();
-        int n = lastMove.draggedWith;
+        int n;
         do {
-            removeLastMove();
+            Move lastMove = mh.peek();
+            n = lastMove.draggedWith;
             if (!lastMove.cardWasFaceDown
                     && lastMove.whichCard.isFaceDown()
                     || lastMove.cardWasFaceDown
                     && !lastMove.whichCard.isFaceDown()) {lastMove.whichCard.flip();}
             lastMove.whichCard.moveToPile(lastMove.previousPile);
-            n--;
-        } while (n >= 0);
+            removeLastMove();
+        } while (n != 1);
     }
 
     void clearMoveHistory() {
-        mh.empty();
+        mh.clear();
+        forUndoButton.clear();
+
     }
 
     boolean isEmpty() {

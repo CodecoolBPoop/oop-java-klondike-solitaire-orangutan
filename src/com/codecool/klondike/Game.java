@@ -205,11 +205,11 @@ public class Game extends Pane {
         } else {
             msg = String.format("Placed %s to %s.", card, destPile.getTopCard());
         }
-        /*
-        for (Card c: draggedCards) {
-            moveHistory.addMove(new Move(c, destPile, draggedCards.size()));
+        int idx = 1;
+        for (int i = draggedCards.size()-1; i >= 0; i--) {
+            moveHistory.addMove(new Move(draggedCards.get(i), draggedCards.get(i).getContainingPile(), idx++));
         }
-        */
+
         System.out.println(msg);
         MouseUtil.slideToDest(draggedCards, destPile);
         draggedCards.clear();
