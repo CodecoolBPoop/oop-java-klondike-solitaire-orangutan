@@ -55,7 +55,6 @@ public class Game extends Pane {
             card.moveToPile(discardPile);
             card.flip();
             card.setMouseTransparent(false);
-            System.out.println("Placed " + card.getRank() + " of " + card.getSuit() + " to the waste.");
         }
         if(e.getClickCount() == 2 && card.isTopCard() && !card.isFaceDown()) {
             draggedCards.add(card);
@@ -233,11 +232,12 @@ public class Game extends Pane {
     }
 
     public void refillStockFromDiscard() {
-        for(int i = discardPile.getCards().size()-1; i>=0; i--) {
-            discardPile.getCards().get(i).flip();
-            discardPile.getCards().get(i).moveToPile(stockPile);
+        if (stockPile.isEmpty()) {
+            for(int i = discardPile.getCards().size()-1; i>=0; i--) {
+                discardPile.getCards().get(i).flip();
+                discardPile.getCards().get(i).moveToPile(stockPile);
+            }
         }
-        System.out.println("Stock refilled from discard pile.");
     }
 
     public boolean isMoveValid(Card card, Pile destPile) {
@@ -293,8 +293,6 @@ public class Game extends Pane {
         for (int i = draggedCards.size()-1; i >= 0; i--) {
             moveHistory.addMove(new Move(draggedCards.get(i), draggedCards.get(i).getContainingPile(), idx++));
         }
-
-        System.out.println(msg);
         MouseUtil.slideToDest(draggedCards, destPile, this);
         draggedCards.clear();
     }
