@@ -1,5 +1,8 @@
 package com.codecool.klondike;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -29,6 +32,7 @@ public class Game extends Pane {
     private Pile discardPile;
     private List<Pile> foundationPiles = FXCollections.observableArrayList();
     private List<Pile> tableauPiles = FXCollections.observableArrayList();
+    private  MoveHistory moveHistory = new MoveHistory();
 
     private double dragStartX, dragStartY;
     private List<Card> draggedCards = FXCollections.observableArrayList();
@@ -41,6 +45,7 @@ public class Game extends Pane {
     private EventHandler<MouseEvent> onMouseClickedHandler = e -> {
         Card card = (Card) e.getSource();
         if (card.getContainingPile().getPileType() == Pile.PileType.STOCK) {
+            moveHistory.addMove(new Move(card, stockPile, 0));
             card.moveToPile(discardPile);
             card.flip();
             card.setMouseTransparent(false);
@@ -135,9 +140,9 @@ public class Game extends Pane {
 
     public Game() {
         deck = Card.createNewDeck();
-        initButtons();
         initPiles();
         dealCards();
+        initButtons();
     }
 
     public void addMouseEventHandlers(Card card) {
@@ -200,6 +205,11 @@ public class Game extends Pane {
         } else {
             msg = String.format("Placed %s to %s.", card, destPile.getTopCard());
         }
+        /*
+        for (Card c: draggedCards) {
+            moveHistory.addMove(new Move(c, destPile, draggedCards.size()));
+        }
+        */
         System.out.println(msg);
         MouseUtil.slideToDest(draggedCards, destPile);
         draggedCards.clear();
@@ -221,9 +231,13 @@ public class Game extends Pane {
         undoButton.setLayoutX(110);
         undoButton.setLayoutY(850);
         getChildren().add(undoButton);
+
+
+        undoButton.disableProperty().bind(Bindings.size(moveHistory.returnList()).isEqualTo(0));
+
         undoButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override public void handle(ActionEvent e) {
-                undo();
+                moveHistory.undoLastMove();
             }
         });
     }
@@ -314,13 +328,10 @@ public class Game extends Pane {
         }
 
         deck.clear();
+        moveHistory.clearMoveHistory();
         discardPile.getCards().clear();
         deck = Card.createNewDeck();
         dealCards();
-    }
-
-    public void undo () {
-
     }
 
 }
