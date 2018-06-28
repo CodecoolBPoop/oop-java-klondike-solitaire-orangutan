@@ -27,8 +27,9 @@ class MoveHistory {
 
     void undoLastMove() {
         int n;
+        Move lastMove;
         do {
-            Move lastMove = mh.peek();
+            lastMove = mh.peek();
             n = lastMove.draggedWith;
             if (!lastMove.cardWasFaceDown
                     && lastMove.whichCard.isFaceDown()
@@ -36,7 +37,8 @@ class MoveHistory {
                     && !lastMove.whichCard.isFaceDown()) {lastMove.whichCard.flip();}
             lastMove.whichCard.moveToPile(lastMove.previousPile);
             removeLastMove();
-        } while (n != 1);
+            n--;
+        } while (n > 0);
     }
 
     void clearMoveHistory() {

@@ -16,6 +16,7 @@ class Move {
         this.whichCard = card;
         this.draggedWith = draggedWith;
         this.cardWasFaceDown = card.isFaceDown();
+
     }
 
 }
