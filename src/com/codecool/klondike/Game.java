@@ -46,7 +46,6 @@ public class Game extends Pane {
             card.setMouseTransparent(false);
             System.out.println("Placed " + card.getRank() + " of " + card.getSuit() + " to the waste.");
         }
-        System.out.println(e.getClickCount());
         if(e.getClickCount() == 2) {
             draggedCards.add(card);
             for (int i=0;i<4;i++) {
