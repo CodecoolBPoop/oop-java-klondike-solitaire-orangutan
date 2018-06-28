@@ -100,6 +100,52 @@ public class Game extends Pane {
         }
     };
 
+    private EventHandler<MouseEvent> onMouseClickForAutoWin = e -> {
+        System.out.print(e.getButton());
+        if (false) {
+            Boolean win = true;
+            win = stockPile.isEmpty();
+            if (win) {
+                win = discardPile.isEmpty();
+            }
+            if (win) {
+                for (int i = 0; i < 7; i++) {
+                    for (Card card : tableauPiles.get(i).getCards()) {
+                        win = !card.isFaceDown();
+                    }
+                }
+            }
+            if (win) {
+                int min;
+                Card minCard = null;
+                do {
+                    min = 14;
+                    for (int i = 0; i < 7; i++) {
+                        Pile pileToCheck = tableauPiles.get(i);
+                        if (!pileToCheck.isEmpty()) {
+                            if (pileToCheck.getTopCard().getRank() < min) {
+                                min = pileToCheck.getTopCard().getRank();
+                                minCard = pileToCheck.getTopCard();
+                            }
+                        }
+                    }
+                    Pile destPile = foundationPiles.get(0);
+                    if (minCard != null) {
+                        for (int i = 1; i < 4; i++) {
+                            if (foundationPiles.get(i).getTopCard().getSuit().equals(minCard.getSuit())) {
+                                destPile = foundationPiles.get(i);
+                            }
+                        }
+                        handleValidMove(minCard, destPile);
+                    }
+                } while (min != 14);
+            }
+        }
+    };
+
+
+
+
     private void CheckAndFlipCardIfNeededTopCard(ObservableList<Card> pileToCheck){
         if (pileToCheck.size()>1) {
             Card cardToFlip = pileToCheck.get(pileToCheck.size() - draggedCards.size() - 1);
@@ -188,6 +234,7 @@ public class Game extends Pane {
                             && draggedCards.size() <= 1);
         }
     }
+
     private Pile getValidIntersectingPile(Card card, List<Pile> piles) {
         Pile result = null;
         for (Pile pile : piles) {
