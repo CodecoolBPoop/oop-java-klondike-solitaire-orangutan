@@ -1,10 +1,7 @@
 package com.codecool.klondike;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.BooleanProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -33,7 +30,8 @@ public class Game extends Pane {
     private Pile discardPile;
     private List<Pile> foundationPiles = FXCollections.observableArrayList();
     private List<Pile> tableauPiles = FXCollections.observableArrayList();
-    private  MoveHistory moveHistory = new MoveHistory();
+    private MoveHistory moveHistory = new MoveHistory();
+    private static int backGroundCycle = 1;
 
     private double dragStartX, dragStartY;
     private List<Card> draggedCards = FXCollections.observableArrayList();
@@ -307,7 +305,8 @@ public class Game extends Pane {
         restartButton.setLayoutY(850);
         getChildren().add(restartButton);
         restartButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override public void handle(ActionEvent e) {
+            @Override
+            public void handle(ActionEvent e) {
                 restart();
             }
         });
@@ -316,13 +315,39 @@ public class Game extends Pane {
         undoButton.setLayoutX(110);
         undoButton.setLayoutY(850);
         getChildren().add(undoButton);
-
-
         undoButton.disableProperty().bind(Bindings.size(moveHistory.returnList()).isEqualTo(0));
-
         undoButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override public void handle(ActionEvent e) {
+            @Override
+            public void handle(ActionEvent e) {
                 moveHistory.undoLastMove();
+            }
+        });
+
+        Button themeButton = new Button("Board themes");
+        themeButton.setLayoutX(1150);
+        themeButton.setLayoutY(850);
+        getChildren().add(themeButton);
+        themeButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                if (backGroundCycle < BoardBackgrounds.values().length) {
+                    setTableBackground(new Image(BoardBackgrounds.values()[backGroundCycle++].url));
+                } else {
+                    backGroundCycle = 0;
+                    setTableBackground(new Image(BoardBackgrounds.values()[backGroundCycle++].url));
+                }
+            }
+        });
+
+        Button cardBgButton = new Button("Card themes");
+        cardBgButton.setLayoutX(1280);
+        cardBgButton.setLayoutY(850);
+        getChildren().add(cardBgButton);
+        cardBgButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                stockPile.getCards().get(0).changeBackFace();
+                restart();
             }
         });
     }
