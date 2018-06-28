@@ -40,13 +40,13 @@ public class Game extends Pane {
 
     private EventHandler<MouseEvent> onMouseClickedHandler = e -> {
         Card card = (Card) e.getSource();
-        if (card.getContainingPile().getPileType() == Pile.PileType.STOCK) {
+        if (card.getContainingPile().getPileType() == Pile.PileType.STOCK && card.isTopCard()) {
             card.moveToPile(discardPile);
             card.flip();
             card.setMouseTransparent(false);
             System.out.println("Placed " + card.getRank() + " of " + card.getSuit() + " to the waste.");
         }
-        if(e.getClickCount() == 2) {
+        if(e.getClickCount() == 2 && card.isTopCard()) {
             draggedCards.add(card);
             for (int i=0;i<4;i++) {
                 if (isMoveValid(card,foundationPiles.get(i))){
