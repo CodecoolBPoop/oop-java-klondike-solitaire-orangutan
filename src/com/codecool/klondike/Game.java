@@ -1,5 +1,8 @@
 package com.codecool.klondike;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -30,6 +33,7 @@ public class Game extends Pane {
     private Pile discardPile;
     private List<Pile> foundationPiles = FXCollections.observableArrayList();
     private List<Pile> tableauPiles = FXCollections.observableArrayList();
+    private  MoveHistory moveHistory = new MoveHistory();
 
     private double dragStartX, dragStartY;
     private List<Card> draggedCards = FXCollections.observableArrayList();
@@ -42,15 +46,18 @@ public class Game extends Pane {
     private EventHandler<MouseEvent> onMouseClickedHandler = e -> {
         Card card = (Card) e.getSource();
         if (card.getContainingPile().getPileType() == Pile.PileType.STOCK && card.isTopCard()) {
+
+            moveHistory.addMove(new Move(card, stockPile, 0));
             card.moveToPile(discardPile);
             card.flip();
             card.setMouseTransparent(false);
             System.out.println("Placed " + card.getRank() + " of " + card.getSuit() + " to the waste.");
         }
-        if(e.getClickCount() == 2 && card.isTopCard()) {
+        if(e.getClickCount() == 2 && card.isTopCard() && !card.isFaceDown()) {
             draggedCards.add(card);
             for (int i=0;i<4;i++) {
                 if (isMoveValid(card,foundationPiles.get(i))){
+                    card.initForDrag(0, 0);
                     CheckAndFlipCardIfNeededTopCard(card.getContainingPile().getCards());
                     handleValidMove(card,foundationPiles.get(i));
                 }
@@ -82,23 +89,18 @@ public class Game extends Pane {
         while(i.hasNext()){
             Card actual = (Card)i.next();
             if (actual.equals(card) && !pastCard){
-                    pastCard = true;
+                pastCard = true;
             }
             if (pastCard){
                 draggedCards.add(actual);
             }
 
         }
-        for (Card drag: draggedCards) {
-            drag.getDropShadow().setRadius(20);
-            drag.getDropShadow().setOffsetX(10);
-            drag.getDropShadow().setOffsetY(10);
-
-            drag.toFront();
-            drag.setTranslateX(offsetX);
-            drag.setTranslateY(offsetY);
+        for (Card c: draggedCards) {
+            c.initForDrag(offsetX, offsetY);
         }
     };
+
 
     private EventHandler<MouseEvent> onMouseClickForAutoWin = e -> {
         if (e.getButton() == MouseButton.SECONDARY) {
@@ -147,7 +149,7 @@ public class Game extends Pane {
     };
 
     private void CheckAndFlipCardIfNeededTopCard(ObservableList<Card> pileToCheck){
-        if (pileToCheck.size()>1) {
+        if (pileToCheck.size()>draggedCards.size()) {
             Card cardToFlip = pileToCheck.get(pileToCheck.size() - draggedCards.size() - 1);
             if (cardToFlip.isFaceDown()) {
                 cardToFlip.flip();
@@ -197,9 +199,9 @@ public class Game extends Pane {
 
     public Game() {
         deck = Card.createNewDeck();
-        initButtons();
         initPiles();
         dealCards();
+        initButtons();
     }
 
     public void addMouseEventHandlers(Card card) {
@@ -264,6 +266,11 @@ public class Game extends Pane {
         } else {
             msg = String.format("Placed %s to %s.", card, destPile.getTopCard());
         }
+        int idx = 1;
+        for (int i = draggedCards.size()-1; i >= 0; i--) {
+            moveHistory.addMove(new Move(draggedCards.get(i), draggedCards.get(i).getContainingPile(), idx++));
+        }
+
         System.out.println(msg);
         MouseUtil.slideToDest(draggedCards, destPile, this);
         draggedCards.clear();
@@ -280,8 +287,19 @@ public class Game extends Pane {
             }
         });
 
-        //put more buttons below
+        Button undoButton = new Button("Undo");
+        undoButton.setLayoutX(110);
+        undoButton.setLayoutY(850);
+        getChildren().add(undoButton);
 
+
+        undoButton.disableProperty().bind(Bindings.size(moveHistory.returnList()).isEqualTo(0));
+
+        undoButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent e) {
+                moveHistory.undoLastMove();
+            }
+        });
     }
 
     private void initPiles() {
@@ -317,8 +335,7 @@ public class Game extends Pane {
     }
 
     public void dealCards() {
-        /*
-        // Collections.shuffle(deck);
+        Collections.shuffle(deck);
         Iterator<Card> deckIterator = deck.iterator();
 
         //TODO
@@ -338,8 +355,8 @@ public class Game extends Pane {
             addMouseEventHandlers(card);
             getChildren().add(card);
         });
-        */
-        cheatStart();
+
+        // cheatStart();
     }
 
     private void cheatStart() {
@@ -391,15 +408,10 @@ public class Game extends Pane {
         }
 
         deck.clear();
+        moveHistory.clearMoveHistory();
         discardPile.getCards().clear();
         deck = Card.createNewDeck();
         dealCards();
-
-
-
-
-
-
     }
 
 }
