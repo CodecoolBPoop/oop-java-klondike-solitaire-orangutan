@@ -44,45 +44,10 @@ public class Game extends Pane {
     private EventHandler<MouseEvent> onMouseClickedHandler = e -> {
         Card card = (Card) e.getSource();
         if (e.getButton() == MouseButton.SECONDARY) {
-            Boolean win = stockPile.isEmpty();
-            if (win) {
-                win = discardPile.isEmpty();
-            }
-            if (win) {
-                for (int i = 0; i < 7; i++) {
-                    for (Card tempCard : tableauPiles.get(i).getCards()) {
-                        win = !tempCard.isFaceDown();
-                    }
-                }
-            }
-            if (win) {
-                int min;
-                Card minCard;
-                do {
-                    min = 14;
-                    minCard = null;
-                    for (int i = 0; i < 7; i++) {
-                        Pile pileToCheck = tableauPiles.get(i);
-                        if (!pileToCheck.isEmpty()) {
-                            if (pileToCheck.getTopCard().getRank() < min) {
-                                min = pileToCheck.getTopCard().getRank();
-                                minCard = pileToCheck.getTopCard();
-                            }
-                        }
-                    }
-                    if (minCard != null) {
-                        Pile destPile = foundationPiles.get(0);
-                        for (int i = 1; i < 4; i++) {
-                            if (foundationPiles.get(i).getTopCard().getSuit().equals(minCard.getSuit())) {
-                                destPile = foundationPiles.get(i);
-                            }
-                        }
-                        draggedCards.clear();
-                        draggedCards.add(minCard);
-                        minCard.getContainingPile().getCards().remove(minCard.getContainingPile().getCards().size()-1);
-                        handleValidMove(minCard,destPile);
-                    }
-                } while (min != 14);
+            if (isAutoWin()) {
+                doAutoWin();
+            } else {
+                autoPutUp();
             }
         }
         if (card.getContainingPile().getPileType() == Pile.PileType.STOCK && card.isTopCard()) {
@@ -171,6 +136,70 @@ public class Game extends Pane {
 
     };
 
+    private boolean isAutoWin() {
+        Boolean win = stockPile.isEmpty();
+        if (win) {
+            win = discardPile.isEmpty();
+        }
+        if (win) {
+            for (int i = 0; i < 7; i++) {
+                for (Card tempCard : tableauPiles.get(i).getCards()) {
+                    win = !tempCard.isFaceDown();
+                }
+            }
+        }
+        return win;
+    }
+
+    private void doAutoWin() {
+        int min;
+        Card minCard;
+        do {
+            min = 14;
+            minCard = null;
+            for (int i = 0; i < 7; i++) {
+                Pile pileToCheck = tableauPiles.get(i);
+                if (!pileToCheck.isEmpty()) {
+                    if (pileToCheck.getTopCard().getRank() < min) {
+                        min = pileToCheck.getTopCard().getRank();
+                        minCard = pileToCheck.getTopCard();
+                    }
+                }
+            }
+            if (minCard != null) {
+                Pile destPile = foundationPiles.get(0);
+                for (int i = 1; i < 4; i++) {
+                    if (foundationPiles.get(i).getTopCard().getSuit().equals(minCard.getSuit())) {
+                        destPile = foundationPiles.get(i);
+                    }
+                }
+                draggedCards.clear();
+                draggedCards.add(minCard);
+                minCard.getContainingPile().getCards().remove(minCard.getContainingPile().getCards().size()-1);
+                handleValidMove(minCard,destPile);
+            }
+        } while (min != 14);
+    }
+
+    private void autoPutUp() {
+        Card tempCard;
+        ArrayList<Integer> insertedPiles = new ArrayList<>();
+        for (int i = 0; i < tableauPiles.size(); i++) {
+            tempCard = tableauPiles.get(i).getTopCard();
+            if (tempCard == null) continue;
+            draggedCards.add(tempCard);
+            for (int j = 0; j < foundationPiles.size(); j++) {
+                if (isMoveValid(tempCard, foundationPiles.get(j)) && !insertedPiles.contains(j)){
+                    tempCard.initForDrag(0, 0);
+                    CheckAndFlipCardIfNeededTopCard(tempCard.getContainingPile().getCards());
+                    handleValidMove(tempCard, foundationPiles.get(j));
+                    insertedPiles.add(j);
+                }
+            }
+            draggedCards.clear();
+        }
+    }
+
     public boolean isGameWon() {
         if (!foundationPiles.get(0).isEmpty()
                 && !foundationPiles.get(1).isEmpty()
@@ -212,21 +241,24 @@ public class Game extends Pane {
     }
 
     public boolean isMoveValid(Card card, Pile destPile) {
-        if ( destPile.isEmpty()) {
-            if (destPile.getPileType() == Pile.PileType.TABLEAU) {
-                return card.getRank() == Ranks.THIRTEENTH.rankNumber;
-            } else {
-                return card.getRank() == Ranks.FIRST.rankNumber && draggedCards.size() <= 1;
+        List<Card> destCards = destPile.getCards();
+        Card destCard = null;
+        if (destCards.size() > 0) {
+            destCard = destCards.get(destCards.size() - 1);
+        }
+        if (destPile.getPileType() == Pile.PileType.TABLEAU) {
+            if (destPile.isEmpty()) {
+                return card.getRank() == 13;
             }
+            return destCard.getRank() - 1 == card.getRank() && Card.isOppositeColor(card, destCard);
         }
-        if (destPile.getPileType() == Pile.PileType.TABLEAU){
-            return (card.isOppositeColor(destPile.getTopCard(),card)
-                        && card.getRank()+1 == destPile.getTopCard().getRank());
-        } else {
-            return (card.isSameSuit(destPile.getTopCard(),card)
-                            && card.getRank() == destPile.getTopCard().getRank()+1
-                            && draggedCards.size() <= 1);
+        if (destPile.getPileType() == Pile.PileType.FOUNDATION) {
+            if (destPile.isEmpty()) {
+                return card.getRank() == 1;
+            }
+            return destCard.getRank() + 1 == card.getRank() && Card.isSameSuit(card, destCard);
         }
+        return false;
     }
 
     private Pile getValidIntersectingPile(Card card, List<Pile> piles) {
