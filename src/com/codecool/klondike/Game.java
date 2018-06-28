@@ -8,6 +8,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
@@ -114,18 +115,19 @@ public class Game extends Pane {
             return;
         Card card = (Card) e.getSource();
         Pile pile = getValidIntersectingPile(card, tableauPiles);
-        if (pile == null )
-            {pile = getValidIntersectingPile(card, foundationPiles);}
+        if (pile == null ) {
+            pile = getValidIntersectingPile(card, foundationPiles);
+        }
 
-            //TODO
-            if (pile != null) {
-                ObservableList<Card> previousPile = card.getContainingPile().getCards();
-                CheckAndFlipCardIfNeededTopCard(previousPile);
-                handleValidMove(card, pile);
-            } else {
-                draggedCards.forEach(MouseUtil::slideBack);
-                draggedCards.clear();
-            }
+        //TODO
+        if (pile != null) {
+            ObservableList<Card> previousPile = card.getContainingPile().getCards();
+            CheckAndFlipCardIfNeededTopCard(previousPile);
+            handleValidMove(card, pile);
+        } else {
+            draggedCards.forEach(MouseUtil::slideBack);
+            draggedCards.clear();
+        }
 
     };
 
@@ -215,9 +217,8 @@ public class Game extends Pane {
             msg = String.format("Placed %s to %s.", card, destPile.getTopCard());
         }
         System.out.println(msg);
-        MouseUtil.slideToDest(draggedCards, destPile);
+        MouseUtil.slideToDest(draggedCards, destPile, this);
         draggedCards.clear();
-        isGameWon();
     }
 
     private void initButtons() {
@@ -268,7 +269,7 @@ public class Game extends Pane {
     }
 
     public void dealCards() {
-        Collections.shuffle(deck);
+        // Collections.shuffle(deck);
         Iterator<Card> deckIterator = deck.iterator();
 
         //TODO
@@ -282,12 +283,32 @@ public class Game extends Pane {
             tableauPiles.get(i).getTopCard().flip();
         }
 
+
         deckIterator.forEachRemaining(card -> {
             stockPile.addCard(card);
             addMouseEventHandlers(card);
             getChildren().add(card);
         });
 
+        // cheatStart();
+    }
+
+    private void cheatStart() {
+        Iterator<Card> deckIterator = deck.iterator();
+        Card card;
+        for (int i = 0; i < foundationPiles.size(); i++) {
+            for (int j = 0; j < 12; j++) {
+                card = deckIterator.next();
+                card.flip();
+                foundationPiles.get(i).addCard(card);
+                getChildren().add(card);
+            }
+            card = deckIterator.next();
+            card.flip();
+            tableauPiles.get(i).addCard(card);
+            getChildren().add(card);
+            addMouseEventHandlers(tableauPiles.get(i).getTopCard());
+        }
     }
 
     void setTableBackground(Image tableBackground) {
